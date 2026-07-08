@@ -7,7 +7,7 @@ import (
 
 	"charm.land/lipgloss/v2"
 
-	"github.com/parham-alvani/arvanstatus-cli/internal/statuspal"
+	"github.com/parham-alvani/arvanstatus-cli/internal/cachet"
 )
 
 func (m Model) renderDetail() string {
@@ -22,26 +22,21 @@ func (m Model) renderDetail() string {
 
 // renderDetailBody is called by the Update handler before populating the
 // viewport. Pure function of inputs — no lipgloss state mutation.
-func renderDetailBody(inc statuspal.Incident, byID map[int]statuspal.Service, width int) string {
+func renderDetailBody(inc cachet.Incident, byID map[int]cachet.Service, width int) string {
 	if width <= 4 {
 		width = 60
 	}
 
-	typeStyle := lipgloss.NewStyle().
-		Foreground(incidentTypeColor(inc.Type)).
-		Bold(true)
 	statusStyle := lipgloss.NewStyle().
-		Foreground(incidentStatusColor(inc.Status))
+		Foreground(incidentStatusColor(inc.Status.Value)).
+		Bold(true)
 
 	header := titleStyle.Render(inc.Title)
-	badges := fmt.Sprintf("%s  %s",
-		typeStyle.Render(fmt.Sprintf("[%s]", strings.ToUpper(inc.Type))),
-		statusStyle.Render(inc.Status),
-	)
-	started := mutedStyle.Render("Started: ") + inc.StartedAt.Format("2006-01-02 15:04 MST")
-	updated := mutedStyle.Render("Updated: ") + inc.UpdatedAt.Format("2006-01-02 15:04 MST")
+	badges := statusStyle.Render(fmt.Sprintf("[%s]", strings.ToUpper(inc.Status.Human)))
+	occurred := mutedStyle.Render("Occurred: ") + fmtTime(inc.Occurred)
+	updated := mutedStyle.Render("Updated:  ") + fmtTime(inc.UpdatedAt)
 
-	names := resolveServiceNames(inc.Services, byID)
+	names := resolveServiceNames(inc.ComponentIDs, byID)
 	affected := mutedStyle.Render("Affected services:")
 	if len(names) == 0 {
 		affected += " " + mutedStyle.Render("(none listed)")
@@ -50,13 +45,13 @@ func renderDetailBody(inc statuspal.Incident, byID map[int]statuspal.Service, wi
 	}
 
 	latest := mutedStyle.Render("Latest update:")
-	body := wrap(inc.LatestUpdate, width-2)
+	body := wrap(inc.LatestUpdate(), width-2)
 
 	return strings.Join([]string{
 		header,
 		badges,
 		"",
-		started,
+		occurred,
 		updated,
 		"",
 		affected,
@@ -66,7 +61,15 @@ func renderDetailBody(inc statuspal.Incident, byID map[int]statuspal.Service, wi
 	}, "\n")
 }
 
-func resolveServiceNames(ids []int, byID map[int]statuspal.Service) []string {
+// fmtTime renders a LocalTime, or a dash when it is unset.
+func fmtTime(t cachet.LocalTime) string {
+	if t.IsZero() {
+		return "—"
+	}
+	return t.Format("2006-01-02 15:04 MST")
+}
+
+func resolveServiceNames(ids []int, byID map[int]cachet.Service) []string {
 	out := make([]string, 0, len(ids))
 	for _, id := range ids {
 		if s, ok := byID[id]; ok {

@@ -7,7 +7,7 @@ import (
 
 	tea "charm.land/bubbletea/v2"
 
-	"github.com/parham-alvani/arvanstatus-cli/internal/statuspal"
+	"github.com/parham-alvani/arvanstatus-cli/internal/cachet"
 	"github.com/parham-alvani/arvanstatus-cli/internal/tui"
 )
 
@@ -27,7 +27,7 @@ func main() {
 		return
 	}
 
-	client := statuspal.NewClient()
+	client := cachet.NewClient()
 	p := tea.NewProgram(tui.New(client))
 	if _, err := p.Run(); err != nil {
 		fmt.Fprintln(os.Stderr, "arvanstatus-cli:", err)

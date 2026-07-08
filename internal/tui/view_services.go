@@ -6,7 +6,7 @@ import (
 
 	"charm.land/lipgloss/v2"
 
-	"github.com/parham-alvani/arvanstatus-cli/internal/statuspal"
+	"github.com/parham-alvani/arvanstatus-cli/internal/cachet"
 )
 
 func (m Model) renderServicesPane(width, height int) string {
@@ -25,9 +25,9 @@ func (m Model) renderServicesPane(width, height int) string {
 }
 
 func (m Model) servicesTitle() string {
-	name := "ArvanCloud"
-	if m.summary != nil && m.summary.StatusPage.Name != "" {
-		name = m.summary.StatusPage.Name
+	name := cachet.PageName
+	if m.summary != nil && m.summary.PageName != "" {
+		name = m.summary.PageName
 	}
 	badge := "all systems operational"
 	badgeStyle := lipgloss.NewStyle().Foreground(colOperational)
@@ -40,13 +40,19 @@ func (m Model) servicesTitle() string {
 	return fmt.Sprintf("%s  %s", name, badgeStyle.Render(badge))
 }
 
-func countDegraded(xs []statuspal.Service) int {
+// countDegraded counts leaf components whose status is worse than Operational.
+// Only leaves are counted so a degraded group doesn't double-count with its
+// child.
+func countDegraded(xs []cachet.Service) int {
 	n := 0
 	for _, x := range xs {
-		if x.CurrentIncidentType != nil {
-			n++
+		if len(x.Children) == 0 {
+			if x.Status.Value > cachet.CompOperational {
+				n++
+			}
+		} else {
+			n += countDegraded(x.Children)
 		}
-		n += countDegraded(x.Children)
 	}
 	return n
 }
@@ -74,7 +80,7 @@ func (m Model) renderServicesBody(width, height int) string {
 		fs := m.flatServices[i]
 		indent := strings.Repeat("  ", fs.depth)
 		bullet := lipgloss.NewStyle().
-			Foreground(severityColor(fs.svc.CurrentIncidentType)).
+			Foreground(componentStatusColor(fs.svc.Status.Value)).
 			Render("●")
 
 		name := fs.svc.Name

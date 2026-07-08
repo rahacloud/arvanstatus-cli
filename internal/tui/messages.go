@@ -3,7 +3,7 @@ package tui
 import (
 	"time"
 
-	"github.com/parham-alvani/arvanstatus-cli/internal/statuspal"
+	"github.com/parham-alvani/arvanstatus-cli/internal/cachet"
 )
 
 type tickMsg time.Time
@@ -11,11 +11,11 @@ type tickMsg time.Time
 type refreshStartedMsg struct{}
 
 type summaryFetchedMsg struct {
-	s   *statuspal.Summary
+	s   *cachet.Summary
 	err error
 }
 
 type incidentsFetchedMsg struct {
-	p   *statuspal.IncidentsPage
+	p   *cachet.IncidentsPage
 	err error
 }

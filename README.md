@@ -1,6 +1,6 @@
 # ArvanCloud Status CLI
 
-A terminal UI that polls the [ArvanCloud status page](https://status.arvancloud.com)
+A terminal UI that polls the [ArvanCloud status page](https://www.arvancloudstatus.ir)
 and shows live service health and recent incidents. Built with
 [Bubble Tea v2](https://charm.land/bubbletea/v2).
 
@@ -46,9 +46,9 @@ Just run the binary — no flags, no config file:
 arvanstatus-cli
 ```
 
-The top pane shows the full ArvanCloud service tree colored by status. The
-bottom pane lists the most recent incidents from the public StatusPal API.
-Both panes refresh automatically every 60 seconds.
+The top pane shows the full ArvanCloud service tree (region groups → services)
+colored by status. The bottom pane lists the most recent incidents from the
+public Cachet API. Both panes refresh automatically every 60 seconds.
 
 ### Keybindings
 
@@ -65,21 +65,23 @@ Both panes refresh automatically every 60 seconds.
 
 ### Status colors
 
-| Color  | Meaning                       |
-|--------|-------------------------------|
-| green  | operational / resolved        |
-| yellow | minor incident / monitoring   |
-| orange | identified                    |
-| red    | major incident / investigating|
-| blue   | scheduled maintenance         |
+| Color  | Component status    | Incident status |
+|--------|---------------------|-----------------|
+| green  | operational         | fixed           |
+| yellow | performance issues  | watching        |
+| orange | partial outage      | identified      |
+| red    | major outage        | investigating   |
 
 ## Data source
 
-ArvanCloud's status page is powered by [StatusPal](https://www.statuspal.io).
-This tool calls two unauthenticated JSON endpoints:
+ArvanCloud's status page is powered by [Cachet](https://cachethq.io) and served
+at [`www.arvancloudstatus.ir`](https://www.arvancloudstatus.ir). This tool calls
+its unauthenticated Cachet v3 JSON:API:
 
-- `GET https://statuspal.io/api/v2/status_pages/arvancloud/summary`
-- `GET https://statuspal.io/api/v2/status_pages/arvancloud/incidents`
+- `GET https://www.arvancloudstatus.ir/api/component-groups`
+- `GET https://www.arvancloudstatus.ir/api/components?include=group`
+- `GET https://www.arvancloudstatus.ir/api/incidents?include=updates,components`
 
+Components and their groups are assembled into a region → service tree.
 Timestamps are returned in `Asia/Tehran` local time without offset and are
 parsed accordingly.

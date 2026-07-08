@@ -4,13 +4,14 @@ import (
 	"image/color"
 
 	"charm.land/lipgloss/v2"
+
+	"github.com/parham-alvani/arvanstatus-cli/internal/cachet"
 )
 
 var (
 	colOperational = lipgloss.Color("#22c55e")
 	colMinor       = lipgloss.Color("#eab308")
 	colMajor       = lipgloss.Color("#ef4444")
-	colScheduled   = lipgloss.Color("#3b82f6")
 	colIdentified  = lipgloss.Color("#f97316")
 	colMonitoring  = lipgloss.Color("#eab308")
 	colMuted       = lipgloss.Color("#71717a")
@@ -51,46 +52,34 @@ var (
 			Padding(0, 1)
 )
 
-// severityColor maps a *current_incident_type to its bullet color.
-// Nil (operational) → green.
-func severityColor(t *string) color.Color {
-	if t == nil {
+// componentStatusColor maps a Cachet component status value to its bullet
+// color: 1 Operational → green … 4 Major Outage → red.
+func componentStatusColor(value int) color.Color {
+	switch value {
+	case cachet.CompOperational:
 		return colOperational
-	}
-	switch *t {
-	case "minor":
+	case cachet.CompPerformance:
 		return colMinor
-	case "major":
-		return colMajor
-	case "scheduled":
-		return colScheduled
-	}
-	return colMuted
-}
-
-// incidentTypeColor returns the accent color for an incident.Type.
-func incidentTypeColor(t string) color.Color {
-	switch t {
-	case "minor":
-		return colMinor
-	case "major":
-		return colMajor
-	case "scheduled":
-		return colScheduled
-	}
-	return colMuted
-}
-
-// incidentStatusColor returns the accent color for an incident.Status.
-func incidentStatusColor(s string) color.Color {
-	switch s {
-	case "investigating":
-		return colMajor
-	case "identified":
+	case cachet.CompPartial:
 		return colIdentified
-	case "monitoring":
+	case cachet.CompMajor:
+		return colMajor
+	}
+	return colMuted
+}
+
+// incidentStatusColor maps a Cachet incident status value to an accent color:
+// 1 Investigating → red, 2 Identified → orange, 3 Watching → yellow,
+// 4 Fixed → green.
+func incidentStatusColor(value int) color.Color {
+	switch value {
+	case cachet.StatusInvestigating:
+		return colMajor
+	case cachet.StatusIdentified:
+		return colIdentified
+	case cachet.StatusWatching:
 		return colMonitoring
-	case "resolved":
+	case cachet.StatusFixed:
 		return colOperational
 	}
 	return colMuted

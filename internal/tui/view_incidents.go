@@ -7,7 +7,7 @@ import (
 
 	"charm.land/lipgloss/v2"
 
-	"github.com/parham-alvani/arvanstatus-cli/internal/statuspal"
+	"github.com/parham-alvani/arvanstatus-cli/internal/cachet"
 )
 
 func (m Model) renderIncidentsPane(width, height int) string {
@@ -64,20 +64,17 @@ func (m Model) renderIncidentsBody(width, height int) string {
 	return padLines(strings.Join(lines, "\n"), height)
 }
 
-func renderIncidentRow(inc statuspal.Incident, width int, now time.Time) string {
-	typeStyle := lipgloss.NewStyle().
-		Foreground(incidentTypeColor(inc.Type)).
-		Bold(true)
+func renderIncidentRow(inc cachet.Incident, width int, now time.Time) string {
 	statusStyle := lipgloss.NewStyle().
-		Foreground(incidentStatusColor(inc.Status))
+		Foreground(incidentStatusColor(inc.Status.Value)).
+		Bold(true)
 
-	bullet := typeStyle.Render("●")
-	badge := typeStyle.Render(fmt.Sprintf("[%s]", strings.ToUpper(inc.Type)))
-	status := statusStyle.Render(inc.Status)
+	bullet := statusStyle.Render("●")
+	badge := statusStyle.Render(fmt.Sprintf("[%s]", strings.ToUpper(inc.Status.Human)))
 	when := mutedStyle.Render(relTime(inc.UpdatedAt.Time, now))
 
 	head := fmt.Sprintf("%s %s %s", bullet, badge, textStyle.Render(inc.Title))
-	tail := fmt.Sprintf("  %s · %s", status, when)
+	tail := fmt.Sprintf("  %s", when)
 
 	avail := width - lipgloss.Width(tail)
 	if avail < 10 {

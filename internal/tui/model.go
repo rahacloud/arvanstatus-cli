@@ -10,7 +10,7 @@ import (
 	"charm.land/bubbles/v2/spinner"
 	"charm.land/bubbles/v2/viewport"
 
-	"github.com/parham-alvani/arvanstatus-cli/internal/statuspal"
+	"github.com/parham-alvani/arvanstatus-cli/internal/cachet"
 )
 
 type pane int
@@ -24,28 +24,28 @@ const (
 // for indented rendering.
 type flatService struct {
 	depth int
-	svc   statuspal.Service
+	svc   cachet.Service
 }
 
 // Model holds all TUI state.
 type Model struct {
-	client *statuspal.Client
+	client *cachet.Client
 
 	// data
-	summary      *statuspal.Summary
-	incidents    []statuspal.Incident
-	serviceByID  map[int]statuspal.Service
+	summary      *cachet.Summary
+	incidents    []cachet.Incident
+	serviceByID  map[int]cachet.Service
 	flatServices []flatService
 
 	// ui
-	focused          pane
-	servicesCursor   int
-	incidentsCursor  int
-	detail           viewport.Model
-	spinner          spinner.Model
-	help             help.Model
-	keys             keyMap
-	showHelp         bool
+	focused         pane
+	servicesCursor  int
+	incidentsCursor int
+	detail          viewport.Model
+	spinner         spinner.Model
+	help            help.Model
+	keys            keyMap
+	showHelp        bool
 
 	// mode
 	showDetail bool
@@ -60,7 +60,7 @@ type Model struct {
 
 // New constructs a Model with a default http client pointed at the arvancloud
 // status page.
-func New(client *statuspal.Client) Model {
+func New(client *cachet.Client) Model {
 	sp := spinner.New()
 	sp.Spinner = spinner.Dot
 
@@ -85,10 +85,10 @@ func (m Model) Init() tea.Cmd {
 
 // flattenServices performs a DFS over the services tree and returns a slice of
 // (depth, service) entries, good for one-line-per-service rendering.
-func flattenServices(xs []statuspal.Service) []flatService {
+func flattenServices(xs []cachet.Service) []flatService {
 	var out []flatService
-	var walk func(int, []statuspal.Service)
-	walk = func(depth int, xs []statuspal.Service) {
+	var walk func(int, []cachet.Service)
+	walk = func(depth int, xs []cachet.Service) {
 		for _, x := range xs {
 			out = append(out, flatService{depth: depth, svc: x})
 			walk(depth+1, x.Children)

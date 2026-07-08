@@ -6,7 +6,7 @@ import (
 
 	tea "charm.land/bubbletea/v2"
 
-	"github.com/parham-alvani/arvanstatus-cli/internal/statuspal"
+	"github.com/parham-alvani/arvanstatus-cli/internal/cachet"
 )
 
 const refreshInterval = 60 * time.Second
@@ -17,12 +17,12 @@ func tickCmd() tea.Cmd {
 	})
 }
 
-func refreshCmd(c *statuspal.Client) tea.Cmd {
+func refreshCmd(c *cachet.Client) tea.Cmd {
 	started := func() tea.Msg { return refreshStartedMsg{} }
 	return tea.Batch(started, fetchSummaryCmd(c), fetchIncidentsCmd(c))
 }
 
-func fetchSummaryCmd(c *statuspal.Client) tea.Cmd {
+func fetchSummaryCmd(c *cachet.Client) tea.Cmd {
 	return func() tea.Msg {
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
@@ -31,7 +31,7 @@ func fetchSummaryCmd(c *statuspal.Client) tea.Cmd {
 	}
 }
 
-func fetchIncidentsCmd(c *statuspal.Client) tea.Cmd {
+func fetchIncidentsCmd(c *cachet.Client) tea.Cmd {
 	return func() tea.Msg {
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
