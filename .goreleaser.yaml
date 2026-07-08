@@ -53,8 +53,8 @@ changelog:
 nfpms:
   - id: packages
     package_name: arvanstatus-cli
-    vendor: raha-io
-    homepage: https://github.com/raha-io/arvanstatus-cli
+    vendor: rahacloud
+    homepage: https://github.com/rahacloud/arvanstatus-cli
     maintainer: Parham Alvani <parham.alvani@gmail.com>
     description: Terminal UI that polls the ArvanCloud status page and reports incidents.
     license: MIT
@@ -66,7 +66,7 @@ nfpms:
 
 release:
   github:
-    owner: raha-io
+    owner: rahacloud
     name: arvanstatus-cli
   draft: false
   prerelease: auto
